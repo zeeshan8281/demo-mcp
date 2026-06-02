@@ -1,5 +1,13 @@
 # demo-mcp — Build Your Own MCP Server 🛠️
 
+![MCP](https://img.shields.io/badge/MCP-model--context--protocol-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Claude](https://img.shields.io/badge/Claude-D97757?logo=claude&logoColor=white)
+![Workshop](https://img.shields.io/badge/workshop-ready-brightgreen)
+![AI](https://img.shields.io/badge/AI-tools-purple)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 A tiny [Model Context Protocol](https://modelcontextprotocol.io) server for the workshop.
 It exposes **4 tools**, **1 resource**, and **1 prompt** to any MCP client (like Claude).
 
