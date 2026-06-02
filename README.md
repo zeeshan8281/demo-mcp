@@ -3,6 +3,9 @@
 A tiny [Model Context Protocol](https://modelcontextprotocol.io) server for the workshop.
 It exposes **3 tools**, **1 resource**, and **1 prompt** to any MCP client (like Claude).
 
+> 🐍 **Prefer Python?** A line-for-line equivalent lives in [`python/`](./python/).
+> This root project is the TypeScript version.
+
 ---
 
 ## What is MCP, in one breath?
