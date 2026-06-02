@@ -77,6 +77,58 @@ def get_weather(city: str) -> str:
 
 
 # ─────────────────────────────────────────────────────────────
+# TOOL 4: get_live_weather — a REAL API call (no API key needed).
+# Uses Open-Meteo: first geocode the city to lat/lon, then fetch
+# the current weather. This is the "graduation" from the mock
+# tool above — same shape, real data.
+# ─────────────────────────────────────────────────────────────
+WEATHER_CODES = {
+    0: "clear sky", 1: "mainly clear", 2: "partly cloudy", 3: "overcast",
+    45: "fog", 48: "rime fog", 51: "light drizzle", 61: "rain",
+    63: "moderate rain", 65: "heavy rain", 71: "snow", 80: "rain showers",
+    95: "thunderstorm",
+}
+
+
+@mcp.tool()
+def get_live_weather(city: str) -> str:
+    """Get the REAL current weather for a city using the free Open-Meteo API.
+
+    Args:
+        city: City name, e.g. 'Tokyo'
+    """
+    import httpx
+
+    # Step 1: turn the city name into coordinates.
+    geo = httpx.get(
+        "https://geocoding-api.open-meteo.com/v1/search",
+        params={"name": city, "count": 1},
+    ).json()
+    if not geo.get("results"):
+        return f'Couldn\'t find a city named "{city}".'
+    loc = geo["results"][0]
+
+    # Step 2: fetch the current weather for those coordinates.
+    wx = httpx.get(
+        "https://api.open-meteo.com/v1/forecast",
+        params={
+            "latitude": loc["latitude"],
+            "longitude": loc["longitude"],
+            "current": "temperature_2m,weather_code,wind_speed_10m",
+        },
+    ).json()
+    cur = wx["current"]
+    desc = WEATHER_CODES.get(cur["weather_code"], f"code {cur['weather_code']}")
+
+    country = loc.get("country")
+    place = f"{loc['name']}, {country}" if country else loc["name"]
+    return (
+        f"Live weather in {place}: {desc}, "
+        f"{cur['temperature_2m']}°C, wind {cur['wind_speed_10m']} km/h."
+    )
+
+
+# ─────────────────────────────────────────────────────────────
 # RESOURCE: read-only data the model can pull in as context.
 # Here we expose a static "about" document at demo://about.
 # ─────────────────────────────────────────────────────────────
@@ -84,8 +136,9 @@ def get_weather(city: str) -> str:
 def about() -> str:
     """Information about the demo MCP server."""
     return (
-        "This is a demo MCP server built for a workshop. It has three tools "
-        "(add, get_current_time, get_weather), one resource, and one prompt."
+        "This is a demo MCP server built for a workshop. It has four tools "
+        "(add, get_current_time, get_weather, get_live_weather), one resource, "
+        "and one prompt."
     )
 
 

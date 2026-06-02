@@ -1,6 +1,6 @@
 # demo-mcp — Python version 🐍
 
-The same workshop MCP server (**3 tools, 1 resource, 1 prompt**) written in
+The same workshop MCP server (**4 tools, 1 resource, 1 prompt**) written in
 Python using the official [`mcp`](https://github.com/modelcontextprotocol/python-sdk)
 SDK's `FastMCP` helper.
 

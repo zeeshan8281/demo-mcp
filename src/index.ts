@@ -3,7 +3,7 @@
  * demo-mcp — a tiny Model Context Protocol server for the workshop.
  *
  * An MCP server exposes three kinds of things to an AI client (like Claude):
- *   - Tools:     actions the model can call (this file shows 3)
+ *   - Tools:     actions the model can call (this file shows 4)
  *   - Resources: read-only data the model can fetch (this file shows 1)
  *   - Prompts:   reusable prompt templates (this file shows 1)
  *
@@ -97,6 +97,61 @@ server.registerTool(
 );
 
 // ────────────────────────────────────────────────────────────
+// TOOL 4: get_live_weather — a REAL API call (no API key needed).
+// Uses Open-Meteo: first geocode the city to lat/lon, then fetch
+// the current weather. This is the "graduation" from the mock
+// tool above — same shape, real data.
+// ────────────────────────────────────────────────────────────
+const WEATHER_CODES: Record<number, string> = {
+  0: "clear sky", 1: "mainly clear", 2: "partly cloudy", 3: "overcast",
+  45: "fog", 48: "rime fog", 51: "light drizzle", 61: "rain", 63: "moderate rain",
+  65: "heavy rain", 71: "snow", 80: "rain showers", 95: "thunderstorm",
+};
+
+server.registerTool(
+  "get_live_weather",
+  {
+    title: "Get live weather",
+    description: "Get the REAL current weather for a city using the free Open-Meteo API.",
+    inputSchema: {
+      city: z.string().describe("City name, e.g. 'Tokyo'"),
+    },
+  },
+  async ({ city }) => {
+    // Step 1: turn the city name into coordinates.
+    const geoRes = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`
+    );
+    const geo = (await geoRes.json()) as {
+      results?: { latitude: number; longitude: number; name: string; country?: string }[];
+    };
+    if (!geo.results?.length) {
+      return { content: [{ type: "text", text: `Couldn't find a city named "${city}".` }] };
+    }
+    const { latitude, longitude, name, country } = geo.results[0];
+
+    // Step 2: fetch the current weather for those coordinates.
+    const wxRes = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m`
+    );
+    const wx = (await wxRes.json()) as {
+      current: { temperature_2m: number; weather_code: number; wind_speed_10m: number };
+    };
+    const c = wx.current;
+    const desc = WEATHER_CODES[c.weather_code] ?? `code ${c.weather_code}`;
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Live weather in ${name}${country ? ", " + country : ""}: ${desc}, ${c.temperature_2m}°C, wind ${c.wind_speed_10m} km/h.`,
+        },
+      ],
+    };
+  }
+);
+
+// ────────────────────────────────────────────────────────────
 // RESOURCE: read-only data the model can pull in as context.
 // Here we expose a static "about" document.
 // ────────────────────────────────────────────────────────────
@@ -112,7 +167,7 @@ server.registerResource(
     contents: [
       {
         uri: uri.href,
-        text: "This is a demo MCP server built for a workshop. It has three tools (add, get_current_time, get_weather), one resource, and one prompt.",
+        text: "This is a demo MCP server built for a workshop. It has four tools (add, get_current_time, get_weather, get_live_weather), one resource, and one prompt.",
       },
     ],
   })

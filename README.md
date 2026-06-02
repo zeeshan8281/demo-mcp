@@ -1,7 +1,7 @@
 # demo-mcp — Build Your Own MCP Server 🛠️
 
 A tiny [Model Context Protocol](https://modelcontextprotocol.io) server for the workshop.
-It exposes **3 tools**, **1 resource**, and **1 prompt** to any MCP client (like Claude).
+It exposes **4 tools**, **1 resource**, and **1 prompt** to any MCP client (like Claude).
 
 > 🐍 **Prefer Python?** A line-for-line equivalent lives in [`python/`](./python/).
 > This root project is the TypeScript version.
@@ -15,9 +15,14 @@ MCP is a standard way to give an AI model new abilities. You write a small
 
 | Concept       | What it is                                  | Example here          |
 | ------------- | ------------------------------------------- | --------------------- |
-| **Tool**      | An action the model can call                | `add`, `get_weather`  |
+| **Tool**      | An action the model can call                | `add`, `get_live_weather` |
 | **Resource**  | Read-only data the model can fetch          | `demo://about`        |
 | **Prompt**    | A reusable prompt template                  | `summarize_weather`   |
+
+The four tools are `add`, `get_current_time`, `get_weather` (mock data — shows
+the pattern), and **`get_live_weather`** (a *real* call to the free
+[Open-Meteo](https://open-meteo.com) API — no API key needed). Comparing the mock
+and real versions side by side is a great teaching moment.
 
 The client (Claude) launches your server and talks to it over **stdio** using
 JSON-RPC. No ports, no web server.
